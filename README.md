@@ -90,5 +90,6 @@ pip install Pillow pygame opencv-python ffpyplayer
 - Der Server muss unter `127.0.0.1:5000` laufen, um eine Verbindung herzustellen.
 - Die Mediendateien im `assets/`-Ordner müssen vorhanden sein, damit der spezielle Modus funktioniert.
 - Für den speziellen Modus sollten Videos nicht länger als die definierten Videolängen (siehe Code) sein, um synchronisierte Effekte zu gewährleisten.
+- Beim erstmaligen Verbinden zum Spiel, wird das eigene Feld nicht angezeigt. Dies aktualisiert sich jedoch nach dem ersten Spielzug.
 
 ---
