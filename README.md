@@ -33,6 +33,8 @@ Dieser Schiffe-Versenken-Client wurde als Schulprojekt entwickelt und kommunizie
    - Jedes Spielfeld enthält 5 Schiffe (zwei 2er, zwei 3er und ein 4er-Schiff). (Dies kann frei gewählt werden, in meinem Fall habe ich mich für diese Verteilung entschieden)
    - Die Logik für Platzierung und Treffererkennung wurde direkt im Client integriert.
    - Visuelles Feedback für Treffer („hit“) und Verfehlungen („miss“) wurde über das Farbschema dargestellt. (Ein weißes Feld bedeutet kein Treffer, ein rotes Feld bedeutet Treffer)
+   - Es dürfen keine Schiffe nebeneinander platziert werden.
+   - Es müssen mindestens 10 Felder mit einem Schiff belegt sein, damit das Spiel gestartet werden kann.
 
 ---
 
