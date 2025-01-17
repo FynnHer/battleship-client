@@ -51,14 +51,14 @@ VIDEOLENGTHS = {
 }
 
 class DraggableShip(tk.Label):
-    def __init__(self, parent, length, game_instance, **kwargs):
+    def __init__(self, parent, length: int, game_instance, orientation="horizontal", **kwargs, ) -> None:
         '''
         Initialization of important game stats and inforamtion
         '''
         super().__init__(parent, **kwargs)
         self.length = length
         self.game = game_instance
-        self.orientation = "horizontal"
+        self.orientation = orientation
         self.bind('<Button-1>', self.start_drag)
         self.bind('<B1-Motion>', self.drag)
         self.bind('<ButtonRelease-1>', self.stop_drag)
@@ -67,7 +67,7 @@ class DraggableShip(tk.Label):
         self._original_y = 0
         self._preview_cells = []
 
-    def toggle_orientation(self, event=None):
+    def toggle_orientation(self, event=None) -> None:
         '''
         Method for toggling the orientation of the ships
         '''
@@ -76,8 +76,10 @@ class DraggableShip(tk.Label):
             self.config(text="🔴" * self.length)
         else:
             self.configure(text="\n".join("🔴" for _ in range(self.length)))
+        if self.game.current_placing_rotation != self.orientation:
+            self.game.current_placing_rotation = self.orientation
 
-    def start_drag(self, event):
+    def start_drag(self, event: tk.Event) -> None:
         '''
         Method for getting coordinates at the start of dragging
         '''
@@ -85,7 +87,7 @@ class DraggableShip(tk.Label):
         self._drag_data["y"] = event.y
         self.configure(bg=COLORS["accent"])
 
-    def drag(self, event):
+    def drag(self, event: tk.Event) -> None:
         '''
         Method for getting coordinates of dragging
         '''
@@ -98,7 +100,7 @@ class DraggableShip(tk.Label):
         # Calling for updated preview in window
         self.update_preview()
         
-    def stop_drag(self, event):
+    def stop_drag(self, event: tk.Event) -> None:
         '''
         Method for dropping the at the end of the drag
         '''    
@@ -129,7 +131,7 @@ class DraggableShip(tk.Label):
             print(f"Error in ship placement: {e}")
             self.place(x=self._original_x, y=self._original_y)
             
-    def update_preview(self):
+    def update_preview(self) -> None:
         '''
         Method for updating the preview of the ship
         '''
@@ -155,7 +157,7 @@ class DraggableShip(tk.Label):
                         self.clear_preview()
                         break
     
-    def clear_preview(self):
+    def clear_preview(self) -> None:
         '''
         Method for clearing all previews and the list with previews
         '''
@@ -167,17 +169,19 @@ class BattleshipGame(tk.Tk):
     '''
     Class for a game including gameloop, screen for selecting username etc
     '''
-    def __init__(self, specialmode):
+    def __init__(self, specialmode: bool) -> None:
         '''
         Initializing important attributes of the class, specialmode selecting wheter there should be special effects or not
         '''
         super().__init__()
-        self.specialmode = specialmode
+        self.specialmode = specialmode # Special mode for special effects, bool
         self.player = None
         self.testcell = None
         self.playing = False
         self.current_video = None
         self.cap = None
+        self.placed_ships = []
+        self.current_placing_rotation = "horizontal"
         self.field = [[" " for _ in range(10)] for _ in range(10)]
         self.title("Battleship")
         self.geometry("1200x800")
@@ -201,7 +205,7 @@ class BattleshipGame(tk.Tk):
         self.selected_cell = None
         self.game_active = False
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         '''
         Setup main ui elements of the gui
         '''
@@ -255,18 +259,17 @@ class BattleshipGame(tk.Tk):
                                          #anchor="center")
         #self.place_ship_label.place(x=290, y=600)
 
-    def create_cell(self, i, j):
+    def create_cell(self, i: int, j: int) -> tk.Label:
         '''
         Method to create each cell
         '''
         cell = tk.Label(self.board_frame, width=4, height=2,
                        bg=COLORS["board"], relief="solid", borderwidth=1)
         cell.grid(row=i, column=j, padx=1, pady=1)
-        # Optional to create future functions or effects when clicking cells
-        #cell.bind('<Button-1>', lambda e, x=i, y=j: self.cell_clicked(x, y))
+        cell.bind('<Button-1>', lambda e, x=i, y=j: self.cell_clicked(x, y))
         return cell
 
-    def create_ship_buttons(self):
+    def create_ship_buttons(self) -> None:
         '''
         Method to crete ship buttons in pregame screen
         '''
@@ -284,18 +287,19 @@ class BattleshipGame(tk.Tk):
             self.finished_ships.append(ship)
 
 
-    def rotate_ships(self):
+    def rotate_ships(self) -> None:
         '''
         Method for all ships to rotate
         '''
         for s in self.finished_ships:
             s.toggle_orientation()
 
-    def place_ship(self, row, col, length, orientation="horizontal"):
+    def place_ship(self, row: int, col: int, length: int, orientation="horizontal") -> bool:
         '''
         Method to place a ship on the board
         '''
-        def are_cells_around_free(r, c, l, orient):
+        
+        def are_cells_around_free(r: int, c: int, l: int, orient: str) -> bool:
             '''
             Function to check adjacent cells for ships
             '''
@@ -317,6 +321,8 @@ class BattleshipGame(tk.Tk):
                         return False
             return True
 
+        ship_cells = []
+
         # Check board for horizontal mode
         if orientation == "horizontal":
             if col + length > 10 or any(self.field[row][col + i] != " "  or not are_cells_around_free(row, col, length, "horizontal") for i in range(length)):
@@ -325,6 +331,7 @@ class BattleshipGame(tk.Tk):
             for i in range(length):
                 self.field[row][col + i] = "o"
                 self.cells[row][col + i].configure(bg=COLORS["accent"])
+                ship_cells.append((row, col + i))
 
         # Check board for vertical mode
         elif orientation == "vertical":
@@ -334,13 +341,49 @@ class BattleshipGame(tk.Tk):
             for i in range(length):
                 self.field[row + i][col] = "o"
                 self.cells[row + i][col].configure(bg=COLORS["accent"])
+                ship_cells.append((row + i, col))
+
+        self.placed_ships.append({"cells": ship_cells, "length": length, "orientation": orientation})
 
         # Activate start_button if enough ships are placed
         if sum(row.count("o") for row in self.field) >= 10:
             self.start_button.configure(state="normal")
         return True
 
-    def start_game(self):
+    def cell_clicked(self, row: int, col: int) -> None:
+        '''
+        Method for handling clicks on the board to remove a ship
+        '''
+        # Check if cell is occupied by ship and calling for remove if true
+        for ship in self.placed_ships:
+            if (row, col) in ship["cells"]:
+                self.remove_ship(ship)
+                break
+
+    def remove_ship(self, ship: dict) -> None:
+        '''
+        Method for removing a ship from the board
+        '''
+
+        # Resetting the cells of the ship
+        for row, col in ship["cells"]:
+            self.field[row][col] = " "
+            self.cells[row][col].configure(bg=COLORS["board"])
+
+        # Creating a new ship with the same data as the removed ship
+        draggable_ship = DraggableShip(
+            self.ships_frame, ship["length"], self, orientation=self.current_placing_rotation,
+            text="🔴" * ship["length"] if self.current_placing_rotation == "horizontal" else "\n".join("🔴" for _ in range(ship["length"])),
+            font=("Arial", 14),
+            bg=COLORS["button"], fg=COLORS["text"],
+            padx=10, pady=5
+        )
+        # Placing the new ship and adding it to the list of placeable ships
+        draggable_ship.pack(side=tk.LEFT, padx=5, pady=5)
+        self.placed_ships.remove(ship)
+        self.finished_ships.append(draggable_ship)
+
+    def start_game(self) -> None:
         '''
         Method for getting the username and then initializing a thread for the server connection
         '''
@@ -351,7 +394,7 @@ class BattleshipGame(tk.Tk):
         # A thread is used so the gui is still available while the other thread awaits an answer from the server
         threading.Thread(target=self.connect_to_server, args=(username,), daemon=True).start()
 
-    def connect_to_server(self, username):
+    def connect_to_server(self, username: str) -> None:
         '''
         Method for a first connection to the server, adress: 127.0.0.1, port: 5000
         '''
@@ -379,7 +422,7 @@ class BattleshipGame(tk.Tk):
         except Exception as e:
             messagebox.showerror("Connection Error", str(e))
 
-    def setup_game_screen(self, opponent_name):
+    def setup_game_screen(self, opponent_name: str) -> None:
         '''
         Setting up the gui for the game and deleting previous lobby elements
         '''
@@ -437,7 +480,7 @@ class BattleshipGame(tk.Tk):
                                      width=15, height=2)
         self.launch_button.pack(pady=20)
 
-    def create_board(self, parent, is_opponent=False):
+    def create_board(self, parent: tk.Label, is_opponent=False) -> list:
         '''
         Creating board based on received message from server
         '''
@@ -458,7 +501,7 @@ class BattleshipGame(tk.Tk):
             cells.append(row)
         return cells
 
-    def target_cell(self, row, col):
+    def target_cell(self, row: int, col: int) -> None:
         '''
         target selection method
         '''
@@ -492,7 +535,7 @@ class BattleshipGame(tk.Tk):
                     else:
                         cell.configure(cursor="target")
 
-    def play_alert(self):
+    def play_alert(self) -> None:
         '''
         Method for playing alerts and visiual effects at start of players turn
         '''
@@ -532,7 +575,7 @@ class BattleshipGame(tk.Tk):
             except Exception as e:
                 print(f"Error playing alert: {e}")
 
-    def play_video(self, video_type):
+    def play_video(self, video_type: str) -> None:
         '''
         Method for playing videos if special mode is activated
         '''
@@ -642,7 +685,7 @@ class BattleshipGame(tk.Tk):
                 if 'video_window' in locals() and video_window.winfo_exists():
                     video_window.destroy()
 
-    def stop_current_playback(self):
+    def stop_current_playback(self) -> None:
         """Safely stop current playback and cleanup resources."""
         if self.specialmode:
             self.playing = False
@@ -667,7 +710,7 @@ class BattleshipGame(tk.Tk):
             self.current_video = None
 
 
-    def game_loop(self):
+    def game_loop(self) -> None:
         '''
         Main game loop
         '''
@@ -758,7 +801,7 @@ class BattleshipGame(tk.Tk):
                 self.game_active = False
                 break
 
-    def make_move(self):
+    def make_move(self) -> None:
         '''
         Method for player turn
         '''
@@ -792,7 +835,7 @@ class BattleshipGame(tk.Tk):
         except Exception as e:
             messagebox.showerror("Error", f"Failed to send move: {e}")
 
-    def reset_game(self):
+    def reset_game(self) -> None:
         '''
         Method for resetting game after finished round
         '''
@@ -806,7 +849,7 @@ class BattleshipGame(tk.Tk):
         # Restart in homescreen, not changing the selected mode
         BattleshipGame(self.specialmode).mainloop()
 
-    def send_str(self, data):
+    def send_str(self, data: str) -> None:
         '''
         Basic method for server integration / sending messages
         '''
@@ -816,7 +859,7 @@ class BattleshipGame(tk.Tk):
         except Exception as e:
             raise Exception(f"Failed to send data: {e}")
 
-    def receive_str(self):
+    def receive_str(self) -> str:
         '''
         Basic method for server integration / receiving messages
         '''
@@ -834,7 +877,7 @@ class BattleshipGame(tk.Tk):
         except Exception as e:
             raise Exception(f"Failed to receive data: {e}")
 
-    def __del__(self):
+    def __del__(self) -> None:
         '''
         Method for deleting connection towards server
         '''
@@ -847,7 +890,7 @@ class SelectorWindow(tk.Tk):
     '''
     Class for starting screen and selecting whether specialmode is enabled or not and then calling the BattleshipGame method
     '''
-    def __init__(self):
+    def __init__(self) -> None:
         '''
         Initializing basic attributes used for this class
         '''
@@ -858,7 +901,7 @@ class SelectorWindow(tk.Tk):
         # Setting up UI
         self.setupUI()
     
-    def setupUI(self):
+    def setupUI(self) -> None:
         '''
         Method for setting up the UI
         '''
@@ -894,19 +937,19 @@ class SelectorWindow(tk.Tk):
         self.c2_button.bind('<Enter>', lambda e: self.on_hover(self.c2_button))
         self.c2_button.bind('<Leave>', lambda e: self.on_leave(self.c2_button))
 
-    def on_hover(self, button):
+    def on_hover(self, button: tk.Button) -> None:
         '''
         Method for interaction on hover -> starting of hover
         '''
         button.config(bg=COLORS["accent"], fg=COLORS["board"])
 
-    def on_leave(self, button):
+    def on_leave(self, button: tk.Button) -> None:
         '''
         Method for interaction on hover -> leaving hover
         '''
         button.config(bg=COLORS["board"], fg=COLORS["accent"])
 
-    def normalClient(self):
+    def normalClient(self) -> None:
         '''
         Method for starting game in normal mode
         '''
@@ -914,7 +957,7 @@ class SelectorWindow(tk.Tk):
         # Global function start_game
         start_game(specialmode=False)
 
-    def specialClient(self):
+    def specialClient(self) -> None:
         '''
         Method for starting game in special mode
         '''
@@ -922,7 +965,7 @@ class SelectorWindow(tk.Tk):
         # Global function start_game
         start_game(specialmode=True)
 
-def start_game(specialmode):
+def start_game(specialmode: bool) -> None:
     '''
     Basic function for creating game object and starting the game
     '''
