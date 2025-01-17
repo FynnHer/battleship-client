@@ -65,8 +65,7 @@ class DraggableShip(tk.Label):
         self._drag_data = {"x": 0, "y": 0}
         self._original_x = 0
         self._original_y = 0
-        self._last_highlighted_row = None
-        self._last_highlighted_col = None
+        self._preview_cells = []
 
     def toggle_orientation(self, event=None):
         '''
@@ -76,7 +75,7 @@ class DraggableShip(tk.Label):
         if self.orientation == "horizontal":
             self.config(text="🔴" * self.length)
         else:
-            self.config(text="\n".join("🔴" for _ in range(self.length)))
+            self.configure(text="\n".join("🔴" for _ in range(self.length)))
 
     def start_drag(self, event):
         '''
@@ -95,61 +94,74 @@ class DraggableShip(tk.Label):
         x = self.winfo_x() + deltax
         y = self.winfo_y() + deltay
         self.place(x=x, y=y)
-        
-        try:
-            board_x = self.winfo_rootx() - self.game.board_frame.winfo_rootx()
-            board_y = self.winfo_rooty() - self.game.board_frame.winfo_rooty()
-            grid_x = board_x // 30
-            grid_y = board_y // 30
-            if not self._last_highlighted_row == grid_x and not self._last_highlighted_row == None and self._last_highlighted_col == grid_y and not self._last_highlighted_col == None:   
-                self.highlight_cells(self._last_highlighted_row, self._last_highlighted_col, highlight=False)
-            #self.highlight_cells(grid_y, grid_x, highlight=True)
-            if 0 <= grid_x < 10 and 0 <= grid_y < 10:
-                self.highlight_cells(grid_y, grid_x, highlight=False)
-                self._last_highlighted_row = grid_y
-                self._last_highlighted_col = grid_x
-                
-        except Exception as e:
-            print(f"Error during drag: {e}")
 
+        # Calling for updated preview in window
+        self.update_preview()
+        
     def stop_drag(self, event):
         '''
         Method for dropping the at the end of the drag
         '''    
         try:
+            # Calculate the position of the ship on the board
+            self.update_preview()
             board_x = self.winfo_rootx() - self.game.board_frame.winfo_rootx()
             board_y = self.winfo_rooty() - self.game.board_frame.winfo_rooty()
             grid_x = board_x // 30
             grid_y = board_y // 30
             
+            # Place the ship on the board if it fits
             if 0 <= grid_x < 10 and 0 <= grid_y < 10:
                 if self.game.place_ship(grid_y, grid_x, self.length, self.orientation):
+                    self.game.finished_ships.remove(self)
                     self.destroy()
                 else:
-                    self.place(x=self._original_x, y=self._original_y)
+                    # Reset ship position if it doesn't fit
+                    self.place_forget()
+                    self.pack(side=tk.LEFT, padx=5, pady=5)
+                    self.clear_preview()
             else:
-                self.place(x=self._original_x, y=self._original_y)
+                # Reset ship position if it doesn't fit
+                self.place_forget()
+                self.pack(side=tk.LEFT, padx=5, pady=5)
+                self.clear_preview()
         except Exception as e:
             print(f"Error in ship placement: {e}")
             self.place(x=self._original_x, y=self._original_y)
             
-    def highlight_cells(self, row, col, highlight):
+    def update_preview(self):
         '''
-        Method for highligthing cells on the board prior to the placement.
+        Method for updating the preview of the ship
         '''
-        length = self.length
-        orientation = self.orientation
-        color = COLORS["accent"] if highlight else COLORS["board"]
-        
-        for i in range(length):
-            r, c = (row + i, col) if orientation == "vertical" else (row, col + i)
-            if 0 <= r < 10 and 0 <= c < 10:
-                cell = self.game.cells[r][c]
-                cell.configure(bg=color)
-                #if cell.cget("bg") not in [COLORS["accent"], COLORS["hit"], COLORS["miss"]]:
-                #    cell.configure(bg=color)
-                #if cell.cget("bg") not in [COLORS["accent"], COLORS["hit"], COLORS["miss"]]:
-                #    cell.configure(bg=color)
+        board_x = self.winfo_rootx() - self.game.board_frame.winfo_rootx()
+        board_y = self.winfo_rooty() - self.game.board_frame.winfo_rooty()
+        grid_x = board_x // 30
+        grid_y = board_y // 30
+
+        self.clear_preview()
+
+        # Check if ship fits on the board
+        if 0 <= grid_x < 10 and 0 <= grid_y < 10:
+            for i in range(self.length):
+                r, c = (grid_y + i, grid_x) if self.orientation == "vertical" else (grid_y, grid_x + i)
+                if 0 <= r < 10 and 0 <= c < 10:
+                    # Check if no ship is already placed in the field
+                    if self.game.field[r][c] == " ":
+                        # Update the preview list
+                        self._preview_cells.append((r, c))
+                        # Change the color of the cell
+                        self.game.cells[r][c].configure(bg=COLORS["accent"])
+                    else:
+                        self.clear_preview()
+                        break
+    
+    def clear_preview(self):
+        '''
+        Method for clearing all previews and the list with previews
+        '''
+        for r, c in self._preview_cells:
+            self.game.cells[r][c].configure(bg=COLORS["board"])
+        self._preview_cells.clear()
 
 class BattleshipGame(tk.Tk):
     '''
@@ -165,7 +177,6 @@ class BattleshipGame(tk.Tk):
         self.testcell = None
         self.playing = False
         self.current_video = None
-        self.winlossstop = False
         self.cap = None
         self.field = [[" " for _ in range(10)] for _ in range(10)]
         self.title("Battleship")
@@ -327,11 +338,6 @@ class BattleshipGame(tk.Tk):
         # Activate start_button if enough ships are placed
         if sum(row.count("o") for row in self.field) >= 10:
             self.start_button.configure(state="normal")
-        # Remove ships from list of all placeable ships when being placed
-        for ship in self.finished_ships:
-            if ship.length == length and ship.orientation == orientation:
-                self.finished_ships.remove(ship)
-                break
         return True
 
     def start_game(self):
@@ -405,6 +411,12 @@ class BattleshipGame(tk.Tk):
                 font=("Arial", 16), bg=COLORS["background"],
                 fg=COLORS["text"]).pack(pady=(0, 10))
         self.your_board = self.create_board(your_board_frame, is_opponent=False)
+        # Loading the ships on the board, so the player can see his own placed ships
+        for i in range(10):
+            for j in range(10):
+                if self.field[i][j] == "o":
+                    self.your_board[i][j].configure(bg=COLORS["accent"])
+        
         
         # Opponent's board
         opponent_board_frame = tk.Frame(self.boards_frame, bg=COLORS["background"])
@@ -696,7 +708,7 @@ class BattleshipGame(tk.Tk):
                     if self.specialmode:
                         self.play_video("win")
                         self.after(60000, self.reset_game)
-                    self.winlossstop = False
+                    self.after(500, self.reset_game)
 
                 # Game end - loss
                 elif message == "looser":
@@ -705,6 +717,7 @@ class BattleshipGame(tk.Tk):
                     if self.specialmode:
                         self.play_video("lose")
                         self.after(60000, self.reset_game)  
+                    self.after(500, self.reset_game)
 
                 # Handle the field updates
                 elif isinstance(eval(message), dict):
