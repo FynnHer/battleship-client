@@ -83,9 +83,9 @@ pip install Pillow pygame opencv-python ffpyplayer
 ### Schritte zum Starten des Spiels
 1. Starten Sie das Programm durch Ausführen von `main.py`.
 2. Wählen Sie zwischen "Normaler Client" und "Spezieller Client".
-3. Geben Sie Ihren Benutzernamen ein und starten Sie ein Spiel.
-4. Platzieren Sie Ihre Schiffe durch Ziehen und Ablegen.
-5. Schießen Sie, indem Sie ein Feld auf dem gegnerischen Spielfeld anklicken.
+3. Geben Sie Ihren Benutzernamen ein und platzieren Sie Ihre Schiffe.
+4. Starten Sie das Spiel nachdem Sie mindestens 10 Schiffe plaziert haben.
+5. Schießen Sie, indem Sie ein Feld auf dem gegnerischen Spielfeld anklicken und dann den Launch-Button drücken.
 
 ---
 
