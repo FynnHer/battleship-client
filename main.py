@@ -65,6 +65,9 @@ class DraggableShip(tk.Label):
         self._drag_data = {"x": 0, "y": 0}
         self._original_x = 0
         self._original_y = 0
+        self._last_highlighted_row = None
+        self._last_highlighted_col = None
+        self.highlight_status = [[False for _ in range(10)] for _ in range(10)]
 
     def toggle_orientation(self, event=None):
         '''
@@ -93,11 +96,28 @@ class DraggableShip(tk.Label):
         x = self.winfo_x() + deltax
         y = self.winfo_y() + deltay
         self.place(x=x, y=y)
+        
+        try:
+            board_x = self.winfo_rootx() - self.game.board_frame.winfo_rootx()
+            board_y = self.winfo_rooty() - self.game.board_frame.winfo_rooty()
+            grid_x = board_x // 30
+            grid_y = board_y // 30
+
+            #if self._last_highlighted_row is not None and self._last_highlighted_row != grid_x and self._last_highlighted_col is not None and self._last_highlighted_col != grid_y:   
+                #self.highlight_cells(self._last_highlighted_row, self._last_highlighted_col, highlight=False)
+            self.highlight_cells(grid_y, grid_x, highlight=True)
+            if 0 <= grid_x < 10 and 0 <= grid_y < 10:
+                self.highlight_cells(grid_y, grid_x, highlight=True)
+                self._last_highlighted_row = grid_y
+                self._last_highlighted_col = grid_x
+                
+        except Exception as e:
+            print(f"Error during drag: {e}")
 
     def stop_drag(self, event):
         '''
         Method for dropping the at the end of the drag
-        '''
+        '''    
         try:
             board_x = self.winfo_rootx() - self.game.board_frame.winfo_rootx()
             board_y = self.winfo_rooty() - self.game.board_frame.winfo_rooty()
@@ -114,6 +134,25 @@ class DraggableShip(tk.Label):
         except Exception as e:
             print(f"Error in ship placement: {e}")
             self.place(x=self._original_x, y=self._original_y)
+    def highlight_cells(self, row, col, highlight):
+        '''
+        Method for highligthing cells on the board prior to the placement.
+        '''
+        length = self.length
+        orientation = self.orientation
+        color = COLORS["accent"] if highlight else COLORS["board"]
+        
+        for i in range(length):
+            r, c = (row + i, col) if orientation == "vertical" else (row, col + i)
+            
+            if 0 <= r < 10 and 0 <= c < 10:
+
+                if self.game.cells[r][c] == " ":
+                    cell = self.game.cells[r][c]
+                    if cell.cget("bg") not in [COLORS["accent"], COLORS["hit"], COLORS["miss"]]:
+                        cell.configure(bg=color)
+                #if cell.cget("bg") not in [COLORS["accent"], COLORS["hit"], COLORS["miss"]]:
+                #    cell.configure(bg=color)
 
 class BattleshipGame(tk.Tk):
     '''
