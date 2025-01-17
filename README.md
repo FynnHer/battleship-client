@@ -1,7 +1,7 @@
 # Schiffe Versenken Client - Fynn-Lasse Herrmann
 
 ## Projektübersicht
-Dieser Schiffe-Versenken-Client wurde als Schulprojekt entwickelt und kommuniziert mit einem durch die Aufgabe gegebenen Python Server. Er ermöglicht das einfache und benutzerfreundliche Spielen mit anderen Spielern.
+Dieser Schiffe-Versenken-Client wurde als Schulprojekt entwickelt und kommuniziert mit einem durch die Aufgabe gegebenen Python Server. Er ermöglicht das einfache und benutzerfreundliche Spielen mit anderen Spielern. Ein Nutzer kann den Client in insgesamt zwei verschiedenen Modi verwenden: ein "Normal Mode" sowie ein "Special Mode". Dieser "Special Mode" ist lediglich zum Spaß gedacht und beinhaltet keinesfalls grundlegende Techniken des benutzerfreundlichen Designs.
 
 ---
 
@@ -90,8 +90,35 @@ pip install Pillow pygame opencv-python ffpyplayer
 ---
 
 ## Hinweise
-- Der Server muss unter `127.0.0.1:5000` laufen, um eine Verbindung herzustellen.
+- Der Server muss unter `127.0.0.1:5000` laufen, um eine Verbindung herzustellen. Auf eine Möglichkeit für den User, diese IP mit der GUI zu verändern, wurde absichtlich verzichtet.
 - Die Mediendateien im `assets/`-Ordner müssen vorhanden sein, damit der spezielle Modus funktioniert.
 - Für den speziellen Modus sollten Videos nicht länger als die definierten Videolängen (siehe Code) sein, um synchronisierte Effekte zu gewährleisten.
 
 ---
+## Bilder und Impressionen
+### Farbpalette
+![Farbpalette](https://github.com/FynnHer/battleship-client/blob/main/examplepictures/color_palette.png?raw=true)
+Farbpalette für ein modernes Design
+
+### Client-Auswahl-Seite
+![Client-Auswahl-Fenster](https://github.com/FynnHer/battleship-client/blob/main/examplepictures/client_selector.png?raw=true)
+Ein einfacher Weg, um leicht zwischen zwei verschiedenen Clients zu wechseln.
+
+### Lobby und Schiffe platzieren
+![Lobby - während dem Schiffe platzieren](https://github.com/FynnHer/battleship-client/blob/main/examplepictures/ship_placing.png?raw=true)
+Lobby während dem Platzieren der Schiffe
+
+![Input of username](https://github.com/FynnHer/battleship-client/blob/main/examplepictures/user_input.png?raw=true)
+Einfach eingeben des Benutzernamens
+
+![matchmaking lobby screen](https://github.com/FynnHer/battleship-client/blob/main/examplepictures/matchmaking.png?raw=true)
+Intelligentes Matchmaking System
+
+![window while playing](https://github.com/FynnHer/battleship-client/blob/main/examplepictures/game_screen_your_turn.png?raw=true)
+Intelligentes und ansprechendes Design während dem Spiel
+
+
+
+---
+
+
