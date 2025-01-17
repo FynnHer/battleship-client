@@ -429,7 +429,7 @@ class BattleshipGame(tk.Tk):
         # Clear window
         for widget in self.winfo_children():
             widget.destroy()
-            
+
         # Create game container
         self.game_container = tk.Frame(self, bg=COLORS["background"])
         self.game_container.pack(expand=True, fill="both", padx=20, pady=20)
@@ -751,7 +751,7 @@ class BattleshipGame(tk.Tk):
                     if self.specialmode:
                         self.play_video("win")
                         self.after(60000, self.reset_game)
-                    self.after(500, self.reset_game)
+                    self.after(2000, self.reset_game)
 
                 # Game end - loss
                 elif message == "looser":
@@ -760,7 +760,7 @@ class BattleshipGame(tk.Tk):
                     if self.specialmode:
                         self.play_video("lose")
                         self.after(60000, self.reset_game)  
-                    self.after(500, self.reset_game)
+                    self.after(2000, self.reset_game)
 
                 # Handle the field updates
                 elif isinstance(eval(message), dict):
@@ -801,36 +801,35 @@ class BattleshipGame(tk.Tk):
                 self.game_active = False
                 break
 
-    def make_move(self) -> None:
+    def make_move(self, event=None) -> None:
         '''
         Method for player turn
         '''
-
         # Error if no cell is selected as target
         if not hasattr(self, 'selected_cell') or not self.selected_cell:
             messagebox.showinfo("Select Target", "Please select a target cell first!")
             return
-            
+                
         row, col = self.selected_cell
         try:
             # Format move command to match server expectations
             # Server expects a tuple string like "(row,column)"
             move_cmd = str((row, col))
             self.send_str(move_cmd)
-            
+                
             # Disable launch button and reset selection
             self.launch_button.configure(state="disabled")
             self.opponent_board[row][col].configure(bg=COLORS["board"])
-            
+                
             # Reset cursor
             for r in self.opponent_board:
                 for cell in r:
                     cell.configure(cursor="")
-            
+                
             self.testcell = self.selected_cell
 
             self.selected_cell = None
-            
+                
         # Error handling    
         except Exception as e:
             messagebox.showerror("Error", f"Failed to send move: {e}")
