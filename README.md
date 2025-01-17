@@ -35,6 +35,7 @@ Dieser Schiffe-Versenken-Client wurde als Schulprojekt entwickelt und kommunizie
    - Visuelles Feedback für Treffer („hit“) und Verfehlungen („miss“) wurde über das Farbschema dargestellt. (Ein weißes Feld bedeutet kein Treffer, ein rotes Feld bedeutet Treffer)
    - Es dürfen keine Schiffe nebeneinander platziert werden.
    - Es müssen mindestens 10 Felder mit einem Schiff belegt sein, damit das Spiel gestartet werden kann.
+   - Durch einfaches klicken auf ein platziertes Schiff wird dieses wieder entfernt.
 
 ---
 
@@ -92,6 +93,5 @@ pip install Pillow pygame opencv-python ffpyplayer
 - Der Server muss unter `127.0.0.1:5000` laufen, um eine Verbindung herzustellen.
 - Die Mediendateien im `assets/`-Ordner müssen vorhanden sein, damit der spezielle Modus funktioniert.
 - Für den speziellen Modus sollten Videos nicht länger als die definierten Videolängen (siehe Code) sein, um synchronisierte Effekte zu gewährleisten.
-- Beim erstmaligen Verbinden zum Spiel, wird das eigene Feld nicht angezeigt. Dies aktualisiert sich jedoch nach dem ersten Spielzug.
 
 ---
