@@ -1,7 +1,7 @@
 # Schiffe Versenken Client - Fynn-Lasse Herrmann
 
 ## Projektübersicht
-Dieser Schiffe-Versenken-Client wurde als Schulprojekt entwickelt und kommuniziert mit einem durch die Aufgabe gegebenen Python Server. Er ermöglicht das einfache und benutzerfreundliche Spielen mit anderen Spielern. Ein Nutzer kann den Client in insgesamt zwei verschiedenen Modi verwenden: ein "Normal Mode" sowie ein "Special Mode". Dieser "Special Mode" ist lediglich zum Spaß gedacht und beinhaltet keinesfalls grundlegende Techniken des benutzerfreundlichen Designs.
+Dieser Schiffe-Versenken-Client wurde als Schulprojekt entwickelt und kommuniziert mit einem durch die Aufgabe gegebenen Python Server. Er ermöglicht das einfache und benutzerfreundliche Spielen mit anderen Spielern. Ein Nutzer kann den Client in insgesamt zwei verschiedenen Modi verwenden: ein "Normal Mode" sowie ein "Special Mode". Dieser "Special Mode" ist lediglich zum Spaß gedacht und beinhaltet keinesfalls grundlegende Techniken des benutzerfreundlichen Designs. Deshalb lag der Fokus beim Entwickeln auf dem "Normal Mode" und deshalb soll dieser auch bewertet werden.
 
 ---
 
